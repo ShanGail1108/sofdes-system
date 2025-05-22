@@ -8,7 +8,8 @@ from flask_mail import Mail, Message
 import uuid
 import os
 import hashlib
-
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -17,11 +18,11 @@ CORS(app)
 # -------------------- MySQL CONNECTION --------------------
 def connect_mysql():
     return mysql.connector.connect(
-        host='dhvsuvisyon-dhvsuvisyon.d.aivencloud.com',
-        port=21948,
-        user='avnadmin',
-        password='AVNS_NW3f3UgJbllwOtgGgkT',
-        database='defaultdb',
+        host=os.getenv('MYSQL_HOST'),
+        port=int(os.getenv('MYSQL_PORT')),
+        user=os.getenv('MYSQL_USER'),
+        password=os.getenv('MYSQL_PASSWORD'),
+        database=os.getenv('MYSQL_DB'),
         ssl_disabled=False
     )
 
