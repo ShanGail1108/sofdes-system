@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DHVSU VISYON</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700&family=Open+Sans:wght@600&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Open Sans', sans-serif;
+      overflow: hidden;
+      background: linear-gradient(to bottom right, #000000, #444444, #b22222);
+    }
+
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+      background-color: black;
+      filter: brightness(0.5);
+      transition: filter 1.5s ease;
+    }
+
+    .container {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    #splash {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('../static/UI/openingbg.png') no-repeat center center;
+      background-size: cover;
+      animation: fadeOut 1s ease-in forwards;
+      animation-delay: 2.5s;
+      z-index: 3;
+    }
+
+    @keyframes fadeOut {
+      to {
+        visibility: hidden;
+        opacity: 0;
+      }
+    }
+
+    #role-selection {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeIn 1.2s ease-in forwards;
+      animation-delay: 3.5s;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    #role-selection.visible {
+      pointer-events: auto;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    .content-box {
+      background-color: #f5f5f5;
+      padding: 40px 60px;
+      border-radius: 18px;
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+      border: 3px solid #b22222;
+      text-align: center;
+      max-width: 900px;
+      min-width: 600px;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .welcome-message {
+    font-size: 2.8em;
+    margin-bottom: 40px;
+    color: #333;
+    text-shadow: 2px 2px 6px rgba(178, 34, 34, 0.7);
+    font-family: 'Merriweather', serif;
+    font-weight: 700;
+    user-select: none;
+  }
+    .role-buttons {
+      display: flex;
+      gap: 80px;
+      justify-content: center;
+      flex-wrap: nowrap;
+      margin-bottom: 40px;
+      width: 100%;
+    }
+
+    input[type="radio"] {
+      display: none;
+    }
+
+    .role label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      color: #333;
+      font-size: 1.3em;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      transition: transform 0.25s ease, color 0.3s ease;
+      user-select: none;
+      min-width: 140px;
+      text-align: center;
+    }
+
+    .role label:hover {
+      transform: translateY(-6px);
+      color: #b22222;
+      text-shadow: 0 0 8px rgba(178, 34, 34, 0.7);
+    }
+
+    .icon-wrapper {
+      background-color: rgba(178, 34, 34, 0.12);
+      border-radius: 50%;
+      padding: 26px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px rgba(178, 34, 34, 0.4);
+      transition: all 0.35s ease;
+      width: 130px;
+      height: 130px;
+    }
+
+    input#admin:checked ~ .content-box .label-admin .icon-wrapper,
+    input#guard:checked ~ .content-box .label-guard .icon-wrapper,
+    input#receiver:checked ~ .content-box .label-receiver .icon-wrapper {
+      background-color: rgba(178, 34, 34, 0.25);
+      border: 3px solid #b22222;
+      box-shadow: 0 0 20px #b22222;
+      transform: scale(1.12);
+    }
+
+    .welcome-message h2 {
+  margin-bottom: 8px;
+}
+
+.welcome-message h5 {
+  margin-top: 0;
+}
+
+    .role label img {
+      width: 110px;
+      height: 110px;
+      filter: brightness(0) saturate(100%);
+      transition: filter 0.4s ease;
+      user-select: none;
+    }
+
+    input#admin:checked ~ .content-box .label-admin img,
+    input#guard:checked ~ .content-box .label-guard img,
+    input#receiver:checked ~ .content-box .label-receiver img {
+      filter: brightness(0) saturate(100%) invert(12%) sepia(94%) saturate(6855%) hue-rotate(-5deg) brightness(104%) contrast(115%);
+    }
+
+    .continue-button {
+      display: none;
+      margin-top: 25px;
+      user-select: none;
+    }
+
+    input#admin:checked ~ .content-box .continue-button[data-role="admin"],
+    input#guard:checked ~ .content-box .continue-button[data-role="guard"],
+    input#receiver:checked ~ .content-box .continue-button[data-role="receiver"] {
+      display: block;
+      animation: buttonFadeIn 0.8s ease forwards;
+    }
+
+    @keyframes buttonFadeIn {
+      from {opacity: 0; transform: translateY(15px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    .continue-button button {
+      padding: 14px 38px;
+      background-color: transparent;
+      color: #b22222;
+      font-size: 1.25em;
+      border-radius: 30px;
+      border: 3px solid #b22222;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+      transition: all 0.35s ease;
+      font-weight: 700;
+      box-shadow: 0 0 30px #b22222;
+      user-select: none;
+    }
+
+    .continue-button button:hover {
+      background-color: #b22222;
+      color: #f5f5f5;
+      transform: scale(1.07);
+      box-shadow: 0 0 40px #b22222, 0 0 12px #fff inset;
+    }
+
+    #fade-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #2c2c2c;
+      z-index: 4;
+      animation: blackFadeOut 1s ease-in forwards;
+      animation-delay: 1.5s;
+    }
+
+    @keyframes blackFadeOut {
+      from {
+        opacity: 1;
+      }
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <video autoplay muted loop playsinline id="bg-video" preload="auto">
+    <source src="../static/UI/backgroundgif.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <div class="container">
+    <div id="fade-overlay"></div>
+    <div id="splash"></div>
+
+    <div id="role-selection">
+      <input type="radio" name="role" id="admin">
+      <input type="radio" name="role" id="guard">
+      <input type="radio" name="role" id="receiver">
+
+      <div class="content-box">
+        <div class="welcome-message">
+          <h2>Welcome! </h2>
+          <h5>Please select your role:</h5></div>
+
+        <div class="role-buttons">
+          <div class="role">
+            <label for="admin" class="label-admin">
+              <div class="icon-wrapper">
+                <img src="../static/UI/admin icon.png" alt="Admin">
+              </div>
+              <span>Admin</span>
+            </label>
+          </div>
+
+          <div class="role">
+            <label for="guard" class="label-guard">
+              <div class="icon-wrapper">
+                <img src="../static/UI/guard icon.png" alt="Guard">
+              </div>
+              <span>Guard</span>
+            </label>
+          </div>
+
+          <div class="role">
+            <label for="receiver" class="label-receiver">
+              <div class="icon-wrapper">
+                <img src="../static/UI/receiver icon.png" alt="Receiver">
+              </div>
+              <span>Receiver</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="continue-button" data-role="admin">
+          <button onclick="selectRole('admin')">Continue as Admin</button>
+        </div>
+        <div class="continue-button" data-role="guard">
+          <button onclick="selectRole('guard')">Continue as Guard</button>
+        </div>
+        <div class="continue-button" data-role="receiver">
+          <button onclick="selectRole('receiver')">Continue as Receiver</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function selectRole(role) {
+      fetch('/api/roleselection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: role })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          window.location.href = "/login";
+        } else {
+          alert("Role selection failed.");
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    }
+
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('role-selection').classList.add('visible');
+      }, 4000);
+    });
+  </script>
+</body>
+</html>

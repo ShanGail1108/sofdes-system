@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Account Settings</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: url('../static/UI/yes.jpg') no-repeat center center fixed;
+      background-size: cover;
+      background-color: #000;
+      color: #fff;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      height: 100vh;
+      padding: 0 50px;
+    }
+
+    .login-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .branding {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 30px;
+      transform: translate(-100%, -100%);
+    }
+
+    .branding img {
+      width: 60px;
+      height: 60px;
+      margin-right: 15px;
+    }
+
+    .branding-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .login-container {
+      background: #222020;
+      padding: 40px 50px;
+      border-radius: 10px;
+      width: 420px;
+      box-shadow: 0 0 15px #000;
+      text-align: center;
+      transform: translate(-50%, -13%);
+      height: 340px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 30px;
+      color: white;
+      letter-spacing: 1px;
+    }
+
+    .option-buttons {
+      display: block;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .option-buttons button {
+      width: 70%;
+      height: 80px;
+      padding: 8.5px;
+      background: transparent;
+      color: #ff0000;
+      border: 2px solid #ff0000;
+      border-radius: 25px;
+      font-weight: bold;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.3em;
+      letter-spacing: 1px;
+      cursor: pointer;
+      margin-top: 5px;
+      transition: all 0.3s ease;
+      margin: 10px;
+    }
+
+    .option-buttons button:hover {
+      background-color: #ff0000;
+      color: black;
+      transform: scale(1.03);
+      box-shadow: 0 0 25px #ff0000;
+    }
+
+    .back-icon {
+      position: absolute;
+      top: 55px;
+      left: 50px;
+      font-size: 20px;
+      color: white;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .back-icon:hover {
+      color: #ff8c8c;
+    }
+
+    .terms {
+      font-size: 10px;
+      color: #bbb;
+      margin-top: 30px;
+      line-height: 1.4;
+    }
+
+    .terms a {
+      color: #ccc;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-wrapper">
+    <!-- Branding above box -->
+    <div class="branding">
+      <img src="../static/UI/dvlogo.png" alt="DHVSU Logo" />
+      <div class="branding-title">DHVSU VISYON</div>
+    </div>
+
+    <!-- Option Buttons Box -->
+    <div class="login-container">
+      <h1>ACCOUNT SETTINGS</h1>
+      <div class="container">
+      <!-- Back Icon -->
+      <a href="javascript:history.back()" class="back-icon" title="Go Back">🡠</a>
+      <div class="option-buttons">
+        <button onclick="location.href='{{ url_for('guard_create_account') }}'">Request New Account</button>
+        <button onclick="location.href='{{ url_for('guard_forgot_password') }}'">Request New Password</button>
+      </div>
+
+      <p class="terms">
+        By logging in, you agree to our <a href="#">Terms & Conditions</a>, 
+        <a href="#">Privacy Policy</a>, and <a href="#">Location Tracking Policy</a>.
+      </p>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OTP Verification</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: url("../static/UI/yes.jpg") no-repeat center center fixed;
+      background-size: cover;
+      background-color: #000;
+      color: #fff;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      height: 100vh;
+      padding: 0 50px;
+    }
+
+    .login-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .branding {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 30px;
+      transform: translate(-100%, -100%);
+    }
+
+    .branding img {
+      width: 80px;
+      height: 80px;
+      margin-right: 15px;
+    }
+
+    .branding-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .login-container {
+      background: #222020;
+      padding: 40px 50px;
+      border-radius: 10px;
+      width: 420px;
+      box-shadow: 0 0 15px #000;
+      text-align: center;
+      transform: translate(-50%, -13%);
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: white;
+      letter-spacing: 1px;
+    }
+
+    .otp-inputs {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .otp-inputs input {
+      width: 45px;
+      height: 55px;
+      text-align: center;
+      font-size: 20px;
+      border: none;
+      border-radius: 10px;
+      background:rgb(255, 255, 255);
+      color: black;
+      outline: none;
+      transition: box-shadow 0.3s;
+    }
+
+    .otp-inputs input:focus {
+      box-shadow: 0 0 5px #e63434;
+      border: 1px solid #e63434;
+    }
+
+    form button {
+      width: 50%;
+      padding: 14px;
+      background: transparent;
+      color: #ff0000;
+      border: 2px solid #ff0000;
+      border-radius: 25px;
+      font-weight: bold;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.1em;
+      letter-spacing: 1px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+    }
+
+    form button:hover {
+      background-color: #ff0000;
+      color: black;
+      transform: scale(1.03);
+      box-shadow: 0 0 25px #ff0000;
+    }
+
+    .resend {
+      font-size: 14px;
+      color: #aaa;
+      margin-top: 15px;
+    }
+
+    .resend a {
+      color: #e63434;
+      text-decoration: none;
+      cursor: pointer;
+      font-size: 13px;
+      text-decoration: none;
+      transition: text-decoration 0.3s ease;
+    }
+
+    .resend a:hover {
+      text-decoration: underline;
+    }
+
+    .resend.disabled a {
+      pointer-events: none;
+      color: #666;
+    }
+
+    .countdown {
+      font-size: 13px;
+      margin-top: 5px;
+      color: #bbb;
+    }
+
+    .back-icon {
+      position: absolute;
+      top: 55px;
+      left: 50px;
+      font-size: 20px;
+      color: white;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.3s ease;
+    }
+
+    .back-icon:hover {
+      color: #ff8c8c;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-wrapper">
+    <div class="branding">
+      <img src="../static/UI/dvlogo.png" alt="DHVSU Logo" />
+      <div class="branding-title">DHVSU VISYON</div>
+    </div>
+
+    <div class="login-container">
+      <h1>ENTER OTP</h1>
+      <p>Please enter the 6-digit code sent to your email.</p>
+
+      <a href="javascript:history.back()" class="back-icon" title="Go back">🡠</a>
+
+      <form method="POST" action="/verify_reset_otp">
+        <div class="otp-inputs">
+          <input id="otp1" type="text" name="otp1" maxlength="1" required inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+          <input id="otp2" type="text" name="otp2" maxlength="1" required inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+          <input id="otp3" type="text" name="otp3" maxlength="1" required inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+          <input id="otp4" type="text" name="otp4" maxlength="1" required inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+          <input id="otp5" type="text" name="otp5" maxlength="1" required inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+          <input id="otp6" type="text" name="otp6" maxlength="1" required inputmode="numeric" pattern="[0-9]*" autocomplete="off">
+        </div>
+        <button type="submit">VERIFY</button>
+      </form>
+      {% if error %}
+            <p style="color:red;">{{ error }}</p>
+      {% endif %}
+
+
+      <p class="resend" id="resendSection">
+        Didn’t receive the code? <a href="#" id="resendOtpLink">Resend OTP</a>
+        <span class="countdown" id="countdownText"></span>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Autofill OTP inputs from prefill_otp variable passed by Flask
+    window.onload = function() {
+      const otp = "{{ prefill_otp | default('') }}";
+      if (otp && otp.length === 6) {
+        for (let i = 0; i < 6; i++) {
+          const input = document.getElementById('otp' + (i + 1));
+          if (input) input.value = otp[i];
+        }
+      }
+    }
+
+    // OTP input auto-focus logic
+    const inputs = document.querySelectorAll('.otp-inputs input');
+    inputs.forEach((input, index) => {
+      input.addEventListener('input', () => {
+        if (!/^\d$/.test(input.value)) {
+          input.value = '';
+          return;
+        }
+        if (index < inputs.length - 1) inputs[index + 1].focus();
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && input.value === '' && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+
+      input.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+        const digits = pasteData.replace(/\D/g, '').slice(0, inputs.length);
+        digits.split('').forEach((digit, i) => {
+          inputs[i].value = digit;
+        });
+        if (digits.length === inputs.length) {
+          document.getElementById('otpForm').submit();
+        }
+      });
+    });
+
+    // Resend OTP with countdown timer
+    const resendLink = document.getElementById("resendOtpLink");
+    const countdownText = document.getElementById("countdownText");
+    const resendSection = document.getElementById("resendSection");
+
+    function startCountdown(seconds) {
+      resendSection.classList.add('disabled');
+      resendLink.style.pointerEvents = "none";
+
+      let remaining = seconds;
+      countdownText.textContent = `(${remaining}s)`;
+      const interval = setInterval(() => {
+        remaining--;
+        countdownText.textContent = `(${remaining}s)`;
+        if (remaining <= 0) {
+          clearInterval(interval);
+          countdownText.textContent = '';
+          resendSection.classList.remove('disabled');
+          resendLink.style.pointerEvents = "auto";
+        }
+      }, 1000);
+    }
+
+    resendLink.addEventListener("click", function(e) {
+      e.preventDefault();
+
+      fetch("/resend_otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      })
+      .then(res => res.json())
+      .then(data => {
+        startCountdown(60);
+      })
+      .catch(err => {
+        console.error(err);
+        startCountdown(60); // Prevent spamming even if error
+      });
+    });
+  </script>
+
+</body>
+</html>

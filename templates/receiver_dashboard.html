@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RECEIVER DASHBOARD</title>
+    <!-- Add jsPDF and autoTable via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #222020;
+            --secondary-color: #ad2929;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --text-color: #151414;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #222020;
+            color: var(--text-color);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: var(--secondary-color);
+            color: white;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;;
+        }
+
+        .logo {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .nav-menu {
+            padding: 0 10px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* Map Container */
+        .map-container {
+            padding: 15px;
+            height: 250px;
+            margin: -10px 15px 40px 15px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        #sidebarMap {
+            width: 100%;
+            height: 85%;
+            border-radius: 5px;
+        }
+
+        .map-title {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .map-title i {
+            cursor: pointer;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            padding: 20px;
+            overflow-y: auto;
+
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: var(--light-color);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .user-details h4 {
+            font-size: 0.9rem;
+            color: var(--light-color);
+        }
+
+        .user-details p {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            color: var(--light-color);
+        }
+        .RecVis{
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        /* Dashboard Cards */
+        .cards {
+            display: grid;
+            grid-template-rows: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .rep-cards{
+            display: grid;
+            gap: 30px;
+            margin-bottom: 30px;
+            width: 100%;
+            grid-template-columns: 0.5fr 2fr;
+            height: 70vh;
+            max-height: 80vh;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .card-icon.blue {
+            background-color: var(--primary-color);
+        }
+
+        .card-icon.green {
+            background-color: var(--success-color);
+        }
+
+        .card-icon.orange {
+            background-color: var(--warning-color);
+        }
+
+        .card-icon.red {
+            background-color: var(--accent-color);
+        }
+
+        .card-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .card-description {
+            font-size: 0.8rem;
+            color: #777;
+        }
+              /* Main Sections */
+        .main-sections {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+            position: bottom;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+            margin-top: 6px;
+            padding: 20px;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .section-action {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            width: 400px;
+        }
+        
+        .search-bar input {
+            border: none;
+            outline: none;
+            width: 100%;
+            padding: 5px;
+            font-size: 14px;
+        }
+        
+        .search-bar i {
+            margin-right: 10px;
+            color: #7f8c8d;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .visitor-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 20px;
+             height: 28vh;         /* or any fixed height you want */
+    overflow-y: auto;      /* enables vertical scroll */
+    overflow-x: hidden;
+        }
+        
+        .visitor-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .visitor-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .visitor-card h3 {
+            margin-bottom: 10px;
+            color: #2b445d;
+        }
+        
+        .visitor-info {
+            margin-bottom: 15px;
+        }
+        
+        .visitor-info p {
+            margin: 5px 0;
+            color: #34495e;
+            font-size: 14px;
+        }
+        
+        .visitor-info span {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .receive-btn {
+            background-color: #db3434;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        
+        .receive-btn:hover {
+            background-color: #b92929;
+        }
+        
+        .receive-btn.received {
+            background-color: #27ae60;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        
+        .badge-pending {
+            background-color: #f39c12;
+            color: white;
+        }
+        
+        .badge-received {
+            background-color: #27ae60;
+            color: white;
+        }
+.current-visitor,  .quick-act{
+height: 55vh;
+ max-height: 55vh;
+ overflow: hidden;
+}
+
+.all-visitors{
+ max-height: 80vh;
+ overflow: hidden;
+}
+
+.all-visitors .tbody-scroll {
+  max-height: 62vh; /* Adjust as needed */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.section-action {
+  color: var(--primary-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* TABLES */
+.table-container {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Ensure both tables align */
+.visitor-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.visitor-table th,
+.visitor-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+}
+
+.visitor-table th {
+  font-weight: 600;
+  color: var(--secondary-color);
+  background-color: #fff;
+}
+
+/* Scrollable tbody container */
+.tbody-scroll {
+  max-height: 35vh; /* Adjust as needed */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Optional slim scrollbar styling */
+.tbody-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tbody-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 9px;
+}
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status.checked-in {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--success-color);
+        }
+
+        .status.checked-out {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--accent-color);
+        }
+
+        .status.pending {
+            background-color: rgba(243, 156, 18, 0.1);
+            color: var(--warning-color);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background-color: var(--light-color);
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .action-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .action-btn span {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #777;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* QR Code Section */
+        .qr-section {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px dashed #ddd;
+            border-radius: 8px;
+        }
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 15px;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #eee;
+        }
+
+        .qr-code img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .qr-instructions {
+            font-size: 0.9rem;
+            color: #777;
+            margin-top: 10px;
+        }
+
+        /* Visitor Badge */
+        .visitor-badge {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .badge-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .badge-details {
+            margin-bottom: 15px;
+        }
+
+        .badge-details h3 {
+            margin-bottom: 5px;
+        }
+
+        .badge-details p {
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .badge-qr {
+            margin: 15px auto;
+            width: 150px;
+            height: 150px;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .badge-footer {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 15px;
+        }
+
+        /* Page Sections */
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .main-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+            .cards {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        
+/* Buttons */
+.receive-btn {
+  margin-top: 16px;
+  padding: 10px 0;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+/* When visitor is received */
+.btn-received {
+  background-color: #4caf50;  /* green */
+  color: white;
+  cursor: default;
+}
+
+/* When visitor is not received */
+.btn-not-received {
+  background-color: #ff5722;  /* bright orange/red */
+  color: white;
+}
+
+.btn-not-received:hover:not(:disabled) {
+  background-color: #e64a19;
+}
+
+/* Disabled button */
+.receive-btn[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</head>
+<body>
+<div class="dashboard">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <h1>DHVSU VISYON</h1>
+            <p>Visitor Information System for Your Organized Navigation</p>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-item active" data-section="dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" data-section="visitors">
+                <i class="fas fa-users"></i>
+                <span>Visitors</span>
+            </div>
+            <div class="nav-item" data-section="reports">
+                <i class="fas fa-file-alt"></i>
+                <span>Reports</span>
+            </div>
+            <div class="nav-item" data-section="logout" onclick="window.location.href='/logout'">
+    <i class="fas fa-sign-out-alt"></i>
+    <span>Log Out</span>
+</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Dashboard Section -->
+        <div class="page-section active" id="dashboard-section">
+            <div class="header">
+                <h1>Receiver Dashboard</h1>
+                <div class="user-info" style="display: flex; align-items: center; gap: 10px; flex-direction: row-reverse;">
+                        <img src="https://www.clipartmax.com/png/middle/219-2194605_match-each-word-to-a-picture-security-guard-logo-png.png" alt="User">
+                        <div class="user-details" style="text-align: right;">
+                         <h4>{{ user.username }}</h4>
+                            <p>{{ user.email }}</p>    
+                        </div>
+                </div>
+            </div>
+
+            <!-- Main Sections -->
+            <div class="main-sections">
+                <div class="RecVis">
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">Pending Visitors</div>
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput1" placeholder="Search by name or badge number" oninput="filterVisitors('searchInput1', ['visitorCardsContainer'])">
+                        </div>
+                    </div>
+                    <div class="visitor-cards" id="visitorCardsContainer"></div>
+                </div>
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">Received Visitors</div>
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput2" placeholder="Search by name or badge number, or location..." oninput="filterVisitors('searchInput2', ['visitorCardsContainer2'])">
+                        </div>
+                    </div>
+                    <div class="visitor-cards" id="visitorCardsContainer2"></div>
+                </div>
+                </div>
+
+                <div class="cards">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Visitors Today</div>
+                            <div class="card-icon blue"><i class="fas fa-user-clock"></i></div>
+                        </div>
+                        <div class="card-value" id="visitorsToday">0</div>
+                        <div class="card-description">Date: <span id="dateToday">0</span></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Pending Receive</div>
+                            <div class="card-icon orange"><i class="fas fa-user-slash"></i></div>
+                        </div>
+                        <div class="card-value" id="pendingReceive">0</div>
+                        <div class="card-description">Waiting...</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Visitors Received</div>
+                            <div class="card-icon green"><i class="fas fa-calendar-day"></i></div>
+                        </div>
+                        <div class="card-value" id="receivedVisitor">0</div>
+                        <div class="card-description">Total Received</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Visitors Section -->
+        <div class="page-section" id="visitors-section">
+            <div class="header">
+                <h1>Visitor Management</h1>
+                <div class="user-info" style="display: flex; align-items: center; gap: 10px; flex-direction: row-reverse;">
+                        <img src="https://www.clipartmax.com/png/middle/219-2194605_match-each-word-to-a-picture-security-guard-logo-png.png" alt="User">
+                        <div class="user-details" style="text-align: right;">
+                            <h4>{{ user.username }}</h4>
+                            <p>{{ user.email }}</p>
+                        </div>
+                </div>
+            </div>
+
+             <div class="section all-visitors">
+                    <div class="section-header">
+                        <div class="section-title">All Visitors</div>
+                        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                            <p style="margin: 0 10px 0 0;">Filter by date:</p>
+                            <input type="date" id="filterDate" class="form-control" style="width: 200px; margin-right: 10px;">
+                        </div>
+                    </div>
+                    <div class="table-container">
+                    <table class="visitor-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Badge #</th>
+                                <th>Name</th>
+                                <th>Purpose</th>
+                                <th>Time In</th>
+                                <th>Time Out</th>
+                                <th>Time Received</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <div class="tbody-scroll">
+                        <table class="visitor-table">
+                        <tbody id="allVisitorsTableBody">
+                              {% for row in allvisitors %}
+                                <tr>
+                                <td>{{ row['date'] }}</td>
+                                  <td>{{ row['stub_number'] }}</td>
+                                  <td>{{ row['full_name'] }}</td>
+                                  <td>{{ row['place_to_visit'] }}</td>
+                                  <td>{{ row['time_in'] }}</td>
+                                  <td>{{ row['time_out'] or "Still In" }}</td>
+                                  <td>{{ row['time_'] or "Still In" }}</td>
+                                </tr>
+                              {% endfor %}
+                            </tbody>
+                                           </table>
+                    </div>
+                    </div>
+                </div>
+        </div>
+
+        <!-- Reports Section -->
+            <div class="page-section" id="reports-section">
+                <div class="header">
+                    <h1>Visitor Reports</h1>
+                    <div class="user-info" style="display: flex; align-items: center; gap: 10px; flex-direction: row-reverse;">
+                        <img src="https://www.clipartmax.com/png/middle/219-2194605_match-each-word-to-a-picture-security-guard-logo-png.png" alt="User">
+                        <div class="user-details" style="text-align: right;">
+                            <h4>{{ user.username }}</h4>
+                            <p>{{ user.email }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="rep-cards">
+                        <div class="section report-options" style="position: relative; min-height: 300px; padding-bottom: 60px;">
+                            <div class="section-header">
+                                <div class="section-title">Generate Reports</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="reportType">Report Type</label>
+                                <select id="reportType" class="form-control">
+                                    <option value="daily">Daily Visitor Log</option>
+                                    <option value="monthly">Monthly Summary</option>
+                                    <option value="custom">Custom Date Range</option>
+                                </select>
+                        
+                            
+                            <div class="form-group" id="customDateRange" style="display: none;">
+                                <div style="display: grid; grid-template-rows: 1fr 1fr; gap: 15px; ">
+                                    <div>
+                                        <label for="startDate">Start Date</label>
+                                        <input type="date" id="startDate" class="form-control">
+                                    </div>
+                                    <div>
+                                        <label for="endDate">End Date</label>
+                                        <input type="date" id="endDate" class="form-control" >
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="position: absolute; bottom: 30px; left: 2vw; right:auto; width: 80%; text-align: center;">
+                                <button class="btn btn-primary btn-block" id="generateReportBtn" style="width: 90%; max-width: 300px;">
+                                <i class="fas fa-file-export"></i> Generate Report
+                                </button>
+                            </div>
+
+                            </div>
+                        </div>
+                        <div class="section report-preview">
+                            <div id="reportPreview">
+                                <div class="section-header">
+                                    <div class="section-title">Report Preview</div>
+                                </div>
+                                <div id="reportContent" style="display: block;" >
+                                    <!-- Report pdf preview content will be generated here -->
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            </div>
+    </div>
+</div>
+
+<script>
+
+// DOM Elements
+        const checkInBtn = document.getElementById('checkInBtn');
+        const checkInBtnVisitors = document.getElementById('checkInBtnVisitors');
+        const checkInModal = document.getElementById('checkInModal');
+        const badgeModal = document.getElementById('badgeModal');
+        const mapModal = document.getElementById('mapModal');
+        const closeModalBtns = document.querySelectorAll('.close-modal');
+        const checkInForm = document.getElementById('checkInForm');
+        const visitorsTableBody = document.getElementById('visitors-table-body');
+        const allVisitorsTableBody = document.getElementById('allVisitorsTableBody');
+        const printBadgeBtn = document.getElementById('printBadgeBtn');
+        const expandMapBtn = document.getElementById('expandMap');
+        const navItems = document.querySelectorAll('.nav-item');
+        const pageSections = document.querySelectorAll('.page-section');
+        const reportTypeSelect = document.getElementById('reportType');
+        const customDateRange = document.getElementById('customDateRange');
+        const generateReportBtn = document.getElementById('generateReportBtn');
+        const reportPreview = document.getElementById('reportPreview');
+        const reportContent = document.getElementById('reportContent');
+        const printReportBtn = document.getElementById('printReportBtn');
+        const settingsForm = document.getElementById('settingsForm');
+        
+        // Counter elements
+        const dateTodayEl = document.getElementById('dateToday');
+        const visitorsTodayEl = document.getElementById('visitorsToday');
+        const monthlyVisitorsEl = document.getElementById('monthlyVisitors');
+        const currentMonthEl = document.getElementById('currentMonth');
+        const pendingReceiveEl = document.getElementById('pendingReceive');
+        const scheduledVisitorsEl = document.getElementById('scheduledVisitors');
+        const activeAlertsEl = document.getElementById('activeAlerts');
+
+        // Visitor data
+        let visitors = [];
+        let visitorsTodayCounter = [];
+        let pendingReceivesNow = [];
+        let MonthlyVisitorsCounter = [];
+        let appointments = [];
+        let filterDateValue = ''; // empty means show all
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const navItems = document.querySelectorAll('.nav-item');
+    const pageSections = document.querySelectorAll('.page-section');
+
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const sectionId = item.getAttribute('data-section');
+
+            navItems.forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+
+            pageSections.forEach(section => section.classList.remove('active'));
+            const target = document.getElementById(`${sectionId}-section`);
+            if (target) target.classList.add('active');
+        });
+    });
+
+    updateCurrentDate();
+    renderAllVisitorsTable();
+    setInterval(updateCounters, 500);
+     fetchVisitors();
+    setInterval(fetchVisitors, 3000);
+    fetchCurrentVisitors();
+    setInterval(fetchCurrentVisitors, 3000);
+     // Set up event listeners
+    setupEventListeners();
+});
+
+// Set up all event listeners
+        function setupEventListeners() {
+
+            // Generate report
+            generateReportBtn.addEventListener('click', function() {
+                generateReport();
+                
+            });
+             document.getElementById('reportType').addEventListener('change', function () {
+                customDateRange.style.display = 'block';
+            });
+
+            document.getElementById('filterDate').addEventListener('change', function () {
+                filterDateValue = this.value;
+
+                // Trigger a manual render with the current data
+                const filtered = filterDateValue
+                    ? allVisitors.filter(v => v.date === filterDateValue)
+                    : allVisitors;
+
+                renderAllVisitorsTable(filtered);
+            });
+
+
+
+
+        }
+function forFacal(date) {
+    const d = new Date(date);
+    if (isNaN(d)) {
+        console.warn("Invalid date passed to forFacal():", date);
+        return '';
+    }
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+// Main function to generate the report
+async function generateReport() {
+    const { jsPDF } = window.jspdf;
+    const reportType = reportTypeSelect.value;
+    let reportTitle = '';
+    let reportData = [];
+    const now = new Date();
+    const dateDisplay = now.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    const dayTime = now.toLocaleString(undefined, { weekday: 'long', hour: '2-digit', minute: '2-digit' });
+
+    let customRange = '';
+
+    // Replace with actual user session info if needed
+    const role = 'School Guard';
+    const username = 'GATE 2 GUARD';
+    const email = 'guard@dhvsu.edu.ph';
+
+    if (!Array.isArray(allVisitors) || allVisitors.length === 0) {
+        alert("No visitor data available for generating a report.");
+        return;
+    }
+
+    switch (reportType) {
+        case 'daily': {
+            reportTitle = `DAILY REPORT`;
+            const today = forFacal(now);
+            reportData = allVisitors.filter(v => forFacal(v.date) === today);
+            break;
+        }
+
+        case 'monthly': {
+            const currentMonth = forFacal(now).slice(0, 7); // "YYYY-MM"
+            reportTitle = `MONTHLY REPORT FOR ${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}`;
+            reportData = allVisitors.filter(v => {
+                const visitDate = forFacal(v.date);
+                return visitDate.startsWith(currentMonth);
+            });
+            break;
+        }
+
+        case 'custom': {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates');
+                return;
+            }
+            customRange = `${startDate} to ${endDate}`;
+            reportTitle = `REPORT FOR ${customRange}`;
+            reportData = allVisitors.filter(v => {
+                const visitDate = forFacal(v.date);
+                return visitDate >= startDate && visitDate <= endDate;
+            });
+            break;
+        }
+    }
+
+
+    const doc = new jsPDF();
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(12);
+
+const headerImg = new Image();
+headerImg.src = 'https://i.postimg.cc/PJHpxhZS/HEADERdv.png';
+
+headerImg.onload = () => {
+  doc.addImage(headerImg, 'PNG', 14, 5, 180, 40); // image stays at top
+
+  doc.setFontSize(12);
+  doc.text(`${role.toUpperCase()} ${username}`, 14, 50); // moved down from 40 to 50
+  doc.text(`${email}`, 14, 56);                         // moved down from 46 to 56
+
+  doc.setFontSize(9);
+  doc.text(`${dateDisplay} (${dayTime})`, 148, 56);     // moved down from 40 to 56
+
+  doc.setFontSize(12);
+  doc.line(14, 65, 195, 65);                            // moved down from 50 to 65
+
+  doc.text(reportTitle, 14, 75);                        // moved down from 58 to 75
+  doc.text(`VISITORS ${reportType === 'custom' ? `(${customRange})` : ` ${reportType.toUpperCase()}`}: ${reportData.length}`, 14, 83);
+
+  
+  // Split visitors based on time_received
+  const pendingVisitors = reportData.filter(v => !v.time_received);  // No time_received means pending
+  const receivedVisitors = reportData.filter(v => v.time_received);  // Has time_received means received
+
+  let currentY = 90;
+
+  // Table 1: Pending Visitors
+   currentY += 10;
+  doc.setFontSize(11);
+  doc.text(`Pending Visitors (${pendingVisitors.length})`, 14, currentY - 5);
+
+  if (pendingVisitors.length > 0) {
+    doc.autoTable({
+      startY: currentY,
+      head: [['Badge #', 'Visitor', 'Purpose', 'Time In', 'Time Out', 'Status']],
+      body: pendingVisitors.map(v => [
+        v.badgeNumber,
+        `${v.firstName} ${v.lastName}`,
+        v.purpose,
+        v.timeIn,
+        v.timeOut || 'N/A',
+        'Pending'
+      ]),
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: '#ad2929', textColor: 255 },
+    });
+    currentY = doc.lastAutoTable.finalY + 10;
+  } else {
+    doc.setFontSize(10);
+    doc.text('No pending visitors found.', 14, currentY);
+    currentY += 15;
+  }
+
+  // Table 2: Visitors Received
+  
+  doc.setFontSize(11);
+  doc.text(`Visitors Received (${receivedVisitors.length})`, 14, currentY - 5);
+
+  if (receivedVisitors.length > 0) {
+    doc.autoTable({
+      startY: currentY,
+      head: [['Badge #', 'Visitor', 'Purpose', 'Time In', 'Time Out', 'Status', 'Time Received']],
+      body: receivedVisitors.map(v => [
+        v.badgeNumber,
+        `${v.firstName} ${v.lastName}`,
+        v.purpose,
+        v.timeIn,
+        v.timeOut || 'N/A',
+        'Received',
+        v.time_received
+      ]),
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: '#287233', textColor: 255 },
+    });
+  } else {
+    doc.setFontSize(10);
+    doc.text('No visitors received found.', 14, currentY);
+  }
+
+    // Show preview
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    const previewContainer = document.getElementById('reportContent');
+    previewContainer.innerHTML = `<iframe src="${pdfUrl}" width="100%" height="500px" style="border: none;"></iframe>`;
+};
+}
+
+let allVisitors = []; 
+function fetchVisitors() {
+    fetch('/api/visitors')
+        .then(response => response.json())
+        .then(data => {
+            allVisitors = data;
+            console.log("Fetched visitors:", allVisitors);
+
+            // Filter visitors for current month (for counters only)
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+
+            const visitorsThisMonth = allVisitors.filter(visitor => {
+                const visitDate = new Date(visitor.date);
+                return visitDate.getMonth() === currentMonth && visitDate.getFullYear() === currentYear;
+            });
+
+            if (Array.isArray(visitorsThisMonth)) {
+                MonthlyVisitorsCounter = visitorsThisMonth;
+            }
+
+            // Apply date filter before rendering
+            const filtered = filterDateValue
+                ? allVisitors.filter(v => v.date === filterDateValue)
+                : allVisitors;
+
+            renderAllVisitorsTable(filtered);
+        })
+        .catch(error => {
+            console.error("Error fetching visitors:", error);
+        });
+}
+
+function formatDateLocal(date) {
+  // format a Date object as 'YYYY-MM-DD' using local date parts
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+function fetchCurrentVisitors() {
+  const today = new Date();
+  const todayLocal = formatDateLocal(today); // e.g. "2025-05-18"
+
+  fetch('/api/visitors')
+    .then(response => response.json())
+    .then(data => {
+      visitors = data.filter(visitor => {
+        const visitorDate = new Date(visitor.date);
+        const visitorDateLocal = formatDateLocal(visitorDate);
+        return visitorDateLocal === todayLocal;
+      });
+
+      console.log("Filtered visitors for today:", visitors);
+
+      // Separate visitors into received and not received
+      const notReceived = visitors.filter(v => !v.time_received);
+      const received = visitors.filter(v => v.time_received);
+      const { search1, search2 } = getSearchInputs();
+
+      // 🔁 Conditionally render only what’s needed
+      if (search1.trim() === '') {
+        renderVisitorCards('visitorCardsContainer', notReceived, false); // false = not received
+      } else {
+        filterVisitors(search1, ['visitorCardsContainer']);
+      }
+
+      if (search2.trim() === '') {
+        renderVisitorCards('visitorCardsContainer2', received, true); // true = received
+      } else {
+        filterVisitors(search2, ['visitorCardsContainer2']);
+      }
+
+
+      if (Array.isArray(visitors)) {
+        visitorsTodayCounter = visitors;
+        pendingReceivesNow = visitors.filter(v => v.time_received === null);
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching visitors:", error);
+    });
+}
+
+// Render all visitors table
+    function renderAllVisitorsTable(visitorsList = []) {
+    allVisitorsTableBody.innerHTML = '';
+
+    if (visitorsList.length === 0) {
+        allVisitorsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No visitor records found</td></tr>';
+        return;
+    }
+
+    const sortedVisitors = [...visitorsList].sort((a, b) => {
+        const dateTimeA = new Date(`${a.date}T${a.timeIn}:00`);
+        const dateTimeB = new Date(`${b.date}T${b.timeIn}:00`);
+        return dateTimeB - dateTimeA;
+    });
+
+    sortedVisitors.forEach(visitor => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${visitor.date}</td>
+            <td>${visitor.badgeNumber}</td>
+            <td>${visitor.firstName} ${visitor.lastName}</td>
+            <td>${visitor.purpose}</td>
+            <td>${visitor.timeIn}</td>
+            <td>${visitor.timeOut || 'N/A'}</td>
+            <td>${visitor.time_received || 'N/A'}</td>
+        `;
+        allVisitorsTableBody.appendChild(row);
+    });
+}
+
+
+function renderVisitorCards(containerId, visitorsToRender, isReceived) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = ''; // Only clear the relevant one
+
+  visitorsToRender.forEach(visitor => {
+    const card = document.createElement('div');
+    card.className = 'visitor-card';
+
+    const badgeNumber = visitor.badgeNumber.replace("Badge #:", "").trim();
+    const received = !!visitor.time_received;
+    const buttonClass = received ? 'btn-received' : 'btn-not-received';
+    const buttonLabel = received ? 'Received' : 'Receive';
+
+    card.innerHTML = `
+      <h1>${visitor.firstName} ${visitor.lastName}</h1>
+      <div class="visitor-info">
+        <p><span>Badge Number:</span> ${visitor.badgeNumber}</p>
+        <p><span>Location:</span> ${visitor.purpose}</p>
+        <p><span>Date:</span> ${visitor.date}</p>
+        <p><span>Time In:</span> ${visitor.timeIn}</p>
+        <p><span>Time Out:</span> ${visitor.timeOut || 'N/A'}</p>
+      </div>
+    `;
+
+    const button = document.createElement('button');
+    button.className = `receive-btn ${buttonClass}`;
+    button.textContent = buttonLabel;
+    button.setAttribute('data-badge', badgeNumber);
+    button.onclick = () => receiveVisitor(button);
+    if (received) button.disabled = true;
+    card.appendChild(button);
+
+    const searchData = `${visitor.firstName} ${visitor.lastName}`.toLowerCase();
+    card.setAttribute('data-search', searchData);
+
+    container.appendChild(card);
+  });
+}
+
+
+function filterVisitors(inputId, containerIds) {
+    const query = document.getElementById(inputId).value.toLowerCase();
+
+    containerIds.forEach(containerId => {
+      const container = document.getElementById(containerId);
+      const cards = container.getElementsByClassName('visitor-card');
+
+      for (let card of cards) {
+        const searchableText = card.getAttribute('data-search');
+        card.style.display = searchableText.includes(query) ? '' : 'none';
+      }
+    });
+  }
+
+  function getSearchInputs() {
+  return {
+    search1: document.getElementById('searchInput1')?.value.toLowerCase() || '',
+    search2: document.getElementById('searchInput2')?.value.toLowerCase() || '',
+  };
+}
+
+
+
+
+function receiveVisitor(buttonElement) {
+  const badgeNumber = buttonElement.getAttribute('data-badge');
+
+  if (!badgeNumber) {
+    alert("Visitor badge number is missing.");
+    return;
+  }
+
+  const now = new Date();
+  const timeReceived =  now.toTimeString().split(' ')[0];
+    fetch('/api/receiveVisitor', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        badgeNumber: badgeNumber,
+        time_received: timeReceived
+    })
+    })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error) {
+      alert(`Error: ${data.error}`);
+      return;
+    }
+
+    // Refresh UI after update
+    fetchCurrentVisitors();
+    fetchVisitors();
+    renderAllVisitorsTable();
+    
+
+    alert(`Visitor with badge ${badgeNumber} marked as received.`);
+  })
+  .catch(error => {
+    console.error('Receive failed:', error);
+    alert("An error occurred while marking the visitor as received.");
+  });
+}
+
+
+function updateCurrentDate() {
+    const now = new Date();
+    const dateEl = document.getElementById('dateToday');
+    if (dateEl) {
+        dateEl.textContent = now.toLocaleDateString();
+    }
+}
+
+function updateCounters() {
+    document.getElementById('visitorsToday').textContent = visitors.length;
+    document.getElementById('pendingReceive').textContent = visitors.filter(v => !v.time_received).length;
+    document.getElementById('receivedVisitor').textContent = visitors.filter(v => v.time_received).length;
+}
+
+/*function renderAllVisitorsTable() {
+    const tbody = document.getElementById('allVisitorsTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    visitor.forEach(v => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${v.date}</td>
+            <td>${v.badgeNumber}</td>
+            <td>${v.name}</td>
+            <td>${v.location}</td>
+            <td>${v.timeIn}</td>
+            <td>${v.timeOut}</td>
+            <td>${v.received ? 'Received' : 'Pending'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}*/
+</script>
+</body>
+</html>

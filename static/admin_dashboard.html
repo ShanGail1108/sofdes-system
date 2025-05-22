@@ -1,0 +1,1990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADMIN DASHBOARD</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Add jsPDF and autoTable via CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #222020;
+            --secondary-color: #ad2929;
+            --accent-color: #e74c3c;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --text-color: #151414;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #222020;
+            color: var(--text-color);
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background-color: var(--secondary-color);
+            color: white;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo h2 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+
+        .nav-menu {
+            padding: 0 10px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .nav-item i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: var(--light-color);
+        }
+
+        /* Dashboard Cards */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .card-icon.blue {
+            background-color: var(--primary-color);
+        }
+
+        .card-icon.green {
+            background-color: var(--success-color);
+        }
+
+        .card-icon.orange {
+            background-color: var(--warning-color);
+        }
+
+        .card-icon.red {
+            background-color: var(--accent-color);
+        }
+
+        .card-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .card-description {
+            font-size: 0.8rem;
+            color: #777;
+        }
+
+        /* Main Sections */
+        .main-sections {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+.section {
+  background-color: white;
+  border-radius: 9px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.current-visitor,  .quick-act{
+ max-height: 60vh;
+ overflow: hidden;
+}
+
+.all-visitors{
+ max-height: 90vh;
+ overflow: hidden;
+}
+
+.all-visitors .tbody-scroll {
+  max-height: 65vh; /* Adjust as needed */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.section-action {
+  color: var(--primary-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* TABLES */
+.table-container {
+  width: 100%;
+  overflow: hidden;
+
+}
+
+/* Ensure both tables align */
+.visitor-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.visitor-table th,
+.visitor-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  font-size: 0.9rem;
+}
+
+.visitor-table th {
+  font-weight: 600;
+  color: var(--secondary-color);
+  background-color: #fff;
+}
+
+/* Scrollable tbody container */
+.tbody-scroll {
+  max-height: 40vh; /* Adjust as needed */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Optional slim scrollbar styling */
+.tbody-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.tbody-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 9px;
+}
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status.checked-in {
+            background-color: rgba(46, 204, 113, 0.1);
+            color: var(--success-color);
+        }
+
+        .status.checked-out {
+            background-color: rgba(231, 76, 60, 0.1);
+            color: var(--accent-color);
+        }
+
+        .status.pending {
+            background-color: rgba(243, 156, 18, 0.1);
+            color: var(--warning-color);
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background-color: var(--light-color);
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .action-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .action-btn span {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        /* Visitor Badge */
+        .visitor-badge {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .badge-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .badge-details {
+            margin-bottom: 15px;
+        }
+
+        .badge-details h3 {
+            margin-bottom: 5px;
+        }
+
+        .badge-details p {
+            color: #777;
+            font-size: 0.9rem;
+        }
+
+        .badge-qr {
+            margin: 15px auto;
+            width: 150px;
+            height: 150px;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .badge-footer {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 15px;
+        }
+
+        /* Page Sections */
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .main-sections {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+            .cards {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    .actions {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    color: white;
+  }
+
+  .dropdown-group {
+    position: relative;
+  }
+
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 0;
+    background-color: #424242;
+    color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    width: 320px;
+    padding: 20px;
+    z-index: 100;
+  }
+
+  #notif-toggle:checked ~ .notif-content {
+    display: block;
+  }
+
+  #notif-toggle:checked + label .bell-icon {
+    color: red;
+  }
+
+  .dropdown-label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+
+  .account-placeholder {
+    width: 32px;
+    height: 32px;
+    background-color: white;
+    border-radius: 50%;
+  }
+  .notif-item {
+    display: flex;
+    flex-direction: column;
+    background-color: #424242;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+  }
+
+  .notif-text strong {
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .see-more-label {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #ccc;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none; /* Removed underline */
+  }
+
+  .toggle-details:checked + .see-more-label .see-more-text {
+    display: none;
+  }
+
+  .toggle-details:checked + .see-more-label .see-less-text {
+    display: inline;
+  }
+
+  .see-more-text,
+  .see-less-text {
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  .see-less-text {
+    display: none;
+  }
+
+  .dropdown-details {
+    display: none;
+    margin-top: 8px;
+    font-size: 13px;
+    background-color: #2c2c2c;
+    border-left: 3px solid #d32f2f;
+    padding: 10px;
+    border-radius: 4px;
+    color: #eee;
+  }
+
+  .toggle-details:checked ~ .dropdown-details {
+    display: block;
+  }
+
+  .notif-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .accept-btn {
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    font-size: 12px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+
+  .icon-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-btn .material-icons {
+    color: red;
+    font-size: 20px;
+  }
+
+  .notif-content {
+    padding: 15px;
+    background-color: #424242;
+    color: white;
+    border-radius: 8px;
+    width: 300px;
+  }
+
+  .notif-content h4 {
+    margin-bottom: 5px;
+    font-size: 16px;
+    color: white;
+  }
+
+  .notif-content hr {
+    border: none;
+    height: 3px;
+    background-color: #d32f2f;
+    margin-bottom: 10px;
+  }
+
+  .visitor-table th {
+    text-align: center;
+  }
+  
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</head>
+
+<body>
+    <div class="dashboard">
+    <!-- Sidebar -->
+        <div class="sidebar">
+
+            <div class="logo">
+                <h1>DHVSU VISYON</h1>
+                <p>Visitor Information System for Your Organized Navigation</p>
+            </div>
+
+            <div class="nav-menu">
+
+                <div class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </div>
+
+                <div class="nav-item" data-section="visitors">
+                    <i class="fas fa-users"></i>
+                    <span>Users Account</span>
+                </div>
+
+                <div class="nav-item" data-section="reports">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Users Management</span>
+                </div>
+
+                <div class="nav-item" data-section="settings">
+                    <i class="fas fa-bell"></i>
+                    <span>Notifications</span>
+                </div>
+
+                <div class="nav-item" data-section="logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Log Out</span>
+                </div>
+
+            </div>
+        </div>
+    
+    <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Section -->
+            <div class="page-section active" id="dashboard-section">
+                <div class="header">
+                    <h1>Admin Dashboard</h1>
+                            <div class="actions">
+            <!-- Notification Dropdown Group -->
+            <div class="dropdown-group">
+            <input type="checkbox" id="notif-toggle" hidden>
+            <label for="notif-toggle" class="dropdown-label">
+                <span class="material-icons bell-icon">notifications</span>
+            </label>
+            <div class="dropdown-content notif-content">
+                <h4>Request Notifications</h4>
+                <hr>
+                <div class="notif-item">
+                <div class="notif-text">
+                  <strong>User requests password change.</strong>
+
+                  <input type="checkbox" id="toggle-details-1" class="toggle-details" hidden>
+                  <label for="toggle-details-1" class="see-more-label">
+                    <span class="see-more-text">See more</span>
+                    <span class="see-less-text">See less</span>
+                  </label>
+
+                  <div class="dropdown-details">
+                    <p><strong>Username:</strong> #</p>
+                    <p><strong>Email:</strong> #</p>
+                    <p><strong>Requested:</strong> #</p>
+                    <p><strong>Role:</strong> #</p>
+                    <p><strong>Date:</strong> #</p>
+                  </div>
+                </div>
+                <div class="notif-actions">
+                    <button class="accept-btn">Accept</button>
+                    <button class="icon-btn">
+                        <span class="material-icons">delete</span>
+                    </button>
+                </div>
+
+                </div>
+                <div class="notif-item">
+                <div class="notif-text">
+                  <strong>User requests new account.</strong>
+
+                  <input type="checkbox" id="toggle-details-2" class="toggle-details" hidden>
+                  <label for="toggle-details-2" class="see-more-label">
+                    <span class="see-more-text">See more</span>
+                    <span class="see-less-text">See less</span>
+                  </label>
+
+                  <div class="dropdown-details">
+                    <p><strong>Username:</strong> #</p>
+                    <p><strong>Email:</strong> #</p>
+                    <p><strong>Requested:</strong> #</p>
+                    <p><strong>Role:</strong> #</p>
+                    <p><strong>Date:</strong> #</p>
+                  </div>
+                </div>
+                <div class="notif-actions">
+                    <button class="accept-btn">Accept</button>
+                    <button class="icon-btn">
+                        <span class="material-icons">delete</span>
+                    </button>
+                </div>
+
+                </div>
+            </div>
+            </div>
+        </div>
+                </div>
+
+                <!-- Dashboard Cards -->
+                <div class="cards">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">VISITORS TODAY</div>
+                            <div class="card-icon blue">
+                                <i class="fas fa-user-clock"></i>
+                            </div>
+                        </div>
+                        <div class="card-value" id="visitorsToday">0</div>
+                        <div class="card-description">Date Today: <span id="dateToday">May 18, 2025</span></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">PENDING CHECKOUTS</div>
+                            <div class="card-icon orange">
+                                <i class="fas fa-user-slash"></i>
+                            </div>
+                        </div>
+                        <div class="card-value" id="pendingCheckouts">0</div>
+                        <div class="card-description">Requires Verification</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">VISITORS THIS MONTH</div>
+                            <div class="card-icon green">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                        </div>
+                        <div class="card-value" id="monthlyVisitors">0</div>
+                        <div class="card-description">Month of <span id="currentMonth">May 2025</span></div>
+                    </div>
+                </div>
+                
+
+                <!-- Main Sections -->
+                <div class="main-sections">
+                    <div class="section current-visitors">
+                        <div class="section-header">
+                            <div class="section-title">Current Visitors</div>
+                        </div>
+                        <div class="table-container">
+                            <table class="visitor-table" >
+                            <thead>
+                                <tr>
+                                    <th>Badge #</th>
+                                    <th>Visitor</th>
+                                    <th>Purpose</th>
+                                    <th>Time In</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                    <th>Check Out</th>
+                                </tr>
+                            </thead>
+                            </table>
+                            <div class="tbody-scroll">
+                                <table class="visitor-table">
+                                <tbody id="visitors-table-body">
+                                {% for row in visitors %}
+                                    <tr>
+                                    <td>{{ row['stub_number'] }}</td>
+                                    <td>{{ row['full_name'] }}</td>
+                                    <td>{{ row['place_to_visit'] }}</td>
+                                    <td>{{ row['time_in'] }}</td>
+                                    <td>{{ row['time_out'] or "Still In" }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LOGIN HISTORY SECTION -->
+<div class="section quick-act" style="max-height: 350px; overflow-y: auto; background-color: #ffffff; border-radius: 10px; padding: 0 15px 15px 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+    <div style="position: sticky; top: 0; background-color: #ffffff; padding: 15px 0 10px; z-index: 1;">
+        <h3 style="margin: 0; font-size: 1.2rem; color: #ad2929;">Login History</h3>
+    </div>
+
+    <div class="login-history-list" style="display: flex; flex-direction: column; gap: 12px;">
+        {% for log in login_logs %}
+        <div class="log-entry" style="
+            background: #f7f7f7;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        ">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong style="font-size: 1rem; color: #333;">{{ log.username }}</strong>
+                    <span style="display: block; font-size: 0.85rem; color: #666; margin-top: 3px;">
+                        {{ log.action.capitalize() }} at {{ log.timestamp }}
+                    </span>
+                </div>
+                <button onclick="toggleDetails(this)" style="
+                    background-color: transparent;
+                    border: none;
+                    color: #ad2929;
+                    font-weight: 500;
+                    font-size: 0.9rem;
+                    cursor: pointer;
+                    padding: 5px;
+                ">See Details</button>
+            </div>
+            <div class="log-details" style="margin-top: 10px; display: none; font-size: 0.85rem; color: #444;">
+                <hr style="border: none; border-top: 1px solid #ddd; margin-bottom: 10px;">
+                <p><strong>Email:</strong> {{ log.email }}</p>
+                <p><strong>Role:</strong> {{ log.role }}</p>
+                <p><strong>Timestamp:</strong> {{ log.timestamp }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- TOGGLE SCRIPT -->
+<script>
+function toggleDetails(button) {
+    const details = button.parentElement.nextElementSibling;
+    const isVisible = details.style.display === 'block';
+    details.style.display = isVisible ? 'none' : 'block';
+    button.textContent = isVisible ? 'See Details' : 'Hide Details';
+}
+</script>
+
+
+            <!-- Visitors Section -->
+            <div class="page-section" id="visitors-section">
+                <div class="header">
+                    <h1>Users Account</h1>
+                </div>
+
+                <div class="section all-visitors">
+                    <div class="section-header">
+                        <div class="section-title">All Visitors</div>
+                    </div>
+                    <div class="table-container">
+                    <table class="visitor-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Badge #</th>
+                                <th>Visitor</th>
+                                <th>Purpose</th>
+                                <th>Time In</th>
+                                <th>Time Out</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <div class="tbody-scroll">
+                        <table class="visitor-table">
+                        <tbody id="allVisitorsTableBody">
+                              {% for row in visitors %}
+                                <tr>
+                                  <td>{{ row['stub_number'] }}</td>
+                                  <td>{{ row['full_name'] }}</td>
+                                  <td>{{ row['place_to_visit'] }}</td>
+                                  <td>{{ row['time_in'] }}</td>
+                                  <td>{{ row['time_out'] or "Still In" }}</td>
+                                </tr>
+                              {% endfor %}
+                            </tbody>
+                    </table>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointments Section -->
+            <div class="page-section" id="appointments-section">
+                <div class="header">
+                    <h1>Scheduled Appointments</h1>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">Today's Appointments</div>
+                        <div class="section-action" id="addAppointmentBtn">Add Appointment +</div>
+                    </div>
+                    <table class="visitor-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Visitor</th>
+                                <th>Purpose</th>
+                                <th>Contact</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointmentsTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center;">No appointments scheduled for today</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reports Section -->
+            <div class="page-section" id="reports-section">
+                <div class="header">
+                    <h1>Users Management</h1>
+                </div>
+
+                <div class="section" style="margin-top: 30px;">
+                    <div class="section-header">
+                        <div class="section-title">Users Management</div>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="visitor-table" style="min-width: 600px;">
+                        <thead>
+                            <tr>
+                            <th>Email</th>
+                            <th>Username</th>
+                            <th>Password</th>
+                            <th>Role</th>
+                            <th>Save</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                            <td><input type="email" placeholder="Email" class="form-control" /></td>
+                            <td><input type="text" placeholder="Username" class="form-control" /></td>
+                            <td><input type="password" placeholder="Password" class="form-control" /></td>
+                            <td>
+                                <select class="form-control">
+                                <option>Admin</option>
+                                <option>Guard</option>
+                                <option>Receiver</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn" style="background-color: #ad2929; color: white; padding: 8px 10px; display:block; margin: auto; ">
+                                <i class="fas fa-save"></i>
+                                </button>
+                            </td>
+                            </tr>
+                        </tbody>
+                        </table>
+                    </div>
+                    </div>
+
+            </div>
+
+            <!-- Settings Section -->
+            <div class="page-section" id="settings-section">
+                <div class="header">
+                    <h1>Notifications</h1>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-title">Configuration</div>
+                    </div>
+                    
+                    <form id="settingsForm">
+                        <div class="form-group">
+                            <label for="schoolName">School Name</label>
+                            <input type="text" id="schoolName" class="form-control" value="Springfield Elementary">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="checkInLocation">Default Check-In Location</label>
+                            <input type="text" id="checkInLocation" class="form-control" value="Main Entrance">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="visitorBadgeExpiry">Visitor Badge Expiry (hours)</label>
+                            <input type="number" id="visitorBadgeExpiry" class="form-control" value="8" min="1" max="24">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="requireId" checked> Require ID for check-in
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="gpsVerification" checked> Enable GPS verification for check-out
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-block">Save Settings</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const emergencyBtn = document.getElementById('emergencyBtn');
+        const checkInModal = document.getElementById('checkInModal');
+        const badgeModal = document.getElementById('badgeModal');
+        const closeModalBtns = document.querySelectorAll('.close-modal');
+        const checkInForm = document.getElementById('checkInForm');
+        const visitorsTableBody = document.getElementById('visitors-table-body');
+        const allVisitorsTableBody = document.getElementById('allVisitorsTableBody');
+        const printBadgeBtn = document.getElementById('printBadgeBtn');
+        const navItems = document.querySelectorAll('.nav-item');
+        const pageSections = document.querySelectorAll('.page-section');
+        const reportTypeSelect = document.getElementById('reportType');
+        const customDateRange = document.getElementById('customDateRange');
+        const generateReportBtn = document.getElementById('generateReportBtn');
+        const reportPreview = document.getElementById('reportPreview');
+        const reportContent = document.getElementById('reportContent');
+        const printReportBtn = document.getElementById('printReportBtn');
+        const settingsForm = document.getElementById('settingsForm');
+        
+        // Counter elements
+        const dateTodayEl = document.getElementById('dateToday');
+        const visitorsTodayEl = document.getElementById('visitorsToday');
+        const monthlyVisitorsEl = document.getElementById('monthlyVisitors');
+        const currentMonthEl = document.getElementById('currentMonth');
+        const pendingCheckoutsEl = document.getElementById('pendingCheckouts');
+        const scheduledVisitorsEl = document.getElementById('scheduledVisitors');
+        const activeAlertsEl = document.getElementById('activeAlerts');
+
+        // Visitor data
+        let visitors = [];
+        let visitorsTodayCounter = [];
+        let pendingCheckoutsNow = [];
+        let MonthlyVisitorsCounter = [];
+        let appointments = [];
+
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {            
+            // Generate QR code for check-in station
+            generateQRCode('checkinQrCode', 'https://schoolsecure.example.com/checkin');
+            
+            // Set current date in badge modal
+            updateCurrentDate();
+            
+            // Load current visitors
+            renderVisitorsTable();
+            renderAllVisitorsTable();
+            
+            // Update counters
+            setInterval(updateCounters, 500); // Refreshes every .5 secs
+
+            
+            // Set up event listeners
+            setupEventListeners();
+
+            
+        });
+
+        // Set up all event listeners
+        function setupEventListeners() {
+            // Navigation items
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const sectionId = this.getAttribute('data-section');
+                    switchSection(sectionId);
+                });
+            });
+    
+
+            // Modal close buttons
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const modal = this.closest('.modal');
+                    closeModal(modal);
+                });
+            });
+
+            // Window click handler for modals
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    closeModal(e.target);
+                }
+            });
+
+            // Form Submission - Check In
+            checkInForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                processCheckIn();
+            });
+
+            // Report type change
+            reportTypeSelect.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    customDateRange.style.display = 'block';
+                } else {
+                    customDateRange.style.display = 'none';
+                }
+            });
+
+            // Generate report
+            generateReportBtn.addEventListener('click', function() {
+                generateReport();
+            });
+
+            // Print report
+            printReportBtn.addEventListener('click', function() {
+                alert('Report sent to printer!');
+            });
+
+            // Settings form
+            settingsForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Settings saved successfully!');
+            });
+        }
+
+        // Switch between sections
+        function switchSection(sectionId) {
+            // Update active nav item
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-section') === sectionId) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Show the selected section
+            pageSections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === `${sectionId}-section`) {
+                    section.classList.add('active');
+                }
+            });
+        }
+
+        // Update current date in badge modal
+        function updateCurrentDate() {
+          const now = new Date();
+          const isoDate = now.toISOString().split('T')[0];
+
+const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+const dayName = days[now.getDay()];
+const monthName = months[now.getMonth()];
+const dayNum = String(now.getDate()).padStart(2, '0');
+const year = now.getFullYear();
+
+const dateStr = `${dayName}, ${monthName} ${dayNum}, ${year}`;
+
+document.getElementById('badgeVisitorDate').textContent = `Date: ${dateStr}`;
+        }
+
+        function getLocalISODate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+        }
+
+        // Process check-in form
+async function processCheckIn() {
+  // 1) Build FormData from form (requires inputs with correct name="…")
+  const formData = new FormData(checkInForm);
+
+  // 2) Get geolocation
+  let position;
+  try {
+    position = await new Promise((res, rej) =>
+      navigator.geolocation.getCurrentPosition(res, rej)
+    );
+  } catch {
+    return alert("Please allow location to check in.");
+  }
+  const date_in = new Date();
+  const localDate = getLocalISODate(date_in); // e.g. "2025-05-18" local date
+  formData.append('date', localDate); // e.g., "2025-05-18"
+  formData.append('latitude',  position.coords.latitude);
+  formData.append('longitude', position.coords.longitude);
+  formData.append('status', 'checked-in');
+  
+
+  // 3) Send to backend
+  let result;
+  try {
+    result = await checkInVisitor(formData, position);
+  } catch (err) {
+    return alert("Check‑in failed: " + err.message);
+  }
+  const badgeNumber = result.badge_number;
+
+  // 4) Populate badge modal fields
+  const values = Object.fromEntries(formData.entries());
+  document.getElementById('badgeVisitorName').textContent    =
+    `${values.first_name} ${values.last_name}`;
+  document.getElementById('badgeVisitorPurpose').textContent =
+    `Purpose: ${values.purpose}`;
+  document.getElementById('badgeVisitorContact').textContent =
+    `Contact: ${values.contact}`;
+  document.getElementById('badgeVisitorNumber').textContent  =
+    `Badge #: ${badgeNumber}`;
+
+  const now     = new Date();
+  const dateStr = now.toLocaleDateString(undefined, {
+    month: 'long', day: 'numeric', year: 'numeric'
+  });
+  const timeStr = now.toLocaleTimeString(undefined, {
+    hour: '2-digit', minute: '2-digit'
+  });
+  document.getElementById('badgeVisitorDate').textContent =
+    `Date: ${dateStr}`;
+  document.getElementById('badgeVisitorTime').textContent =
+    `Time In: ${timeStr}`;
+
+  // 5) Generate QR code
+  generateQRCode(
+    'visitorBadgeQr',
+    `${badgeNumber}|${values.first_name} ${values.last_name}|${timeStr}|${position.coords.latitude},${position.coords.longitude}`
+  );
+
+  // 6) Open the badge modal
+  openModal(badgeModal);
+
+  // 7) Add to in-memory visitor list (snake_case keys)
+  visitors.unshift({
+    badge_number: badgeNumber,
+    first_name:   values.first_name,
+    last_name:    values.last_name,
+    purpose:      values.purpose,
+    contact:      values.contact,
+    phone:        values.phone,
+    email:        values.email,
+    id_type:      values.id_type,
+    id_number:    values.id_number,
+    notes:        values.notes,
+    time_in:      timeStr,
+    date:         localDate,
+    status:       'checked-in'
+  });
+
+  // 8) Refresh UI tables and counters
+  renderVisitorsTable();
+  renderAllVisitorsTable();
+  updateCounters();
+
+  // 9) Reset form & close check-in modal
+  checkInForm.reset();
+  closeModal(checkInModal);
+
+  // 10) Start background GPS updates
+  startVisitorTracking(badgeNumber);
+}
+
+
+
+        // Check out a visitor
+       function checkOutVisitor(visitor) {
+  if (!visitor || !visitor.badgeNumber) {
+    alert("Visitor badge number is missing.");
+    return;
+  }
+
+  // Specifically remove "Badge #:" prefix
+  const badgeNumber = visitor.badgeNumber.replace("Badge #:", "").trim();
+
+  if (!badgeNumber) {
+    alert("Invalid badge number format.");
+    return;
+  }
+
+  // Set status and current datetime
+  const status = 'checked-out';
+  const now = new Date();
+  const timeOut = now.toISOString().slice(0, 19).replace('T', ' ');  // 'YYYY-MM-DD HH:MM:SS'
+
+  // Send update to Flask API
+  fetch('/api/updateVisitor', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      badgeNumber: badgeNumber,
+      status: status,
+      timeOut: timeOut
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error) {
+      alert(`Error: ${data.error}`);
+      return;
+    }
+
+    // Update local data
+    visitor.status = status;
+    visitor.timeOut = timeOut;
+
+    renderVisitorsTable();
+    renderAllVisitorsTable();
+    updateCounters();
+
+    alert(`Visitor ${visitor.firstName} ${visitor.lastName} has been checked out successfully.`);
+  })
+  .catch(error => {
+    console.error('Check-out failed:', error);
+    alert("An error occurred while checking out the visitor.");
+  });
+}
+
+// Format a Date object or string to 'YYYY-MM-DD' using local date parts
+function forFacal(date) {
+    const d = new Date(date);
+    if (isNaN(d)) {
+        console.warn("Invalid date passed to forFacal():", date);
+        return '';
+    }
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// Main function to generate the report
+async function generateReport() {
+    const { jsPDF } = window.jspdf;
+    const reportType = reportTypeSelect.value;
+    let reportTitle = '';
+    let reportData = [];
+    const now = new Date();
+    const dateDisplay = now.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    const dayTime = now.toLocaleString(undefined, { weekday: 'long', hour: '2-digit', minute: '2-digit' });
+
+    let customRange = '';
+
+    // Replace with actual user session info if needed
+    const role = 'School Guard';
+    const username = 'GATE 2 GUARD';
+    const email = 'guard@dhvsu.edu.ph';
+
+    if (!Array.isArray(allVisitors) || allVisitors.length === 0) {
+        alert("No visitor data available for generating a report.");
+        return;
+    }
+
+    switch (reportType) {
+        case 'daily': {
+            reportTitle = `DAILY REPORT`;
+            const today = forFacal(now);
+            reportData = allVisitors.filter(v => forFacal(v.date) === today);
+            break;
+        }
+
+        case 'monthly': {
+            const currentMonth = forFacal(now).slice(0, 7); // "YYYY-MM"
+            reportTitle = `MONTHLY REPORT FOR ${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}`;
+            reportData = allVisitors.filter(v => {
+                const visitDate = forFacal(v.date);
+                return visitDate.startsWith(currentMonth);
+            });
+            break;
+        }
+
+        case 'custom': {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            if (!startDate || !endDate) {
+                alert('Please select both start and end dates');
+                return;
+            }
+            customRange = `${startDate} to ${endDate}`;
+            reportTitle = `REPORT FOR ${customRange}`;
+            reportData = allVisitors.filter(v => {
+                const visitDate = forFacal(v.date);
+                return visitDate >= startDate && visitDate <= endDate;
+            });
+            break;
+        }
+    }
+
+
+    const doc = new jsPDF();
+doc.setFont('helvetica', 'normal');
+doc.setFontSize(12);
+
+const headerImg = new Image();
+headerImg.src = 'https://i.postimg.cc/PJHpxhZS/HEADERdv.png';
+
+headerImg.onload = () => {
+  doc.addImage(headerImg, 'PNG', 14, 5, 180, 40); // image stays at top
+
+  doc.setFontSize(12);
+  doc.text(`${role.toUpperCase()} ${username}`, 14, 50); // moved down from 40 to 50
+  doc.text(`${email}`, 14, 56);                         // moved down from 46 to 56
+
+  doc.setFontSize(9);
+  doc.text(`${dateDisplay} (${dayTime})`, 148, 56);     // moved down from 40 to 56
+
+  doc.setFontSize(12);
+  doc.line(14, 65, 195, 65);                            // moved down from 50 to 65
+
+  doc.text(reportTitle, 14, 75);                        // moved down from 58 to 75
+  doc.text(`VISITORS ${reportType === 'custom' ? `(${customRange})` : `THIS ${reportType.toUpperCase()}`}: ${reportData.length}`, 14, 83);
+
+  if (reportData.length > 0) {
+    doc.autoTable({
+      startY: 90,                                       // moved down from 75 to 90
+      head: [['Badge #', 'Visitor', 'Purpose', 'Time In', 'Time Out', 'Status']],
+      body: reportData.map(v => [
+        v.badgeNumber,
+        `${v.firstName} ${v.lastName}`,
+        v.purpose,
+        v.timeIn,
+        v.timeOut || 'N/A',
+        v.status === 'checked-in' ? 'Checked In' : 'Checked Out'
+      ]),
+      styles: {
+        fontSize: 9,
+        cellPadding: 3
+      },
+      headStyles: {
+        fillColor: '#ad2929',
+        textColor: 255
+      }
+    });
+  } else {
+    doc.setFontSize(10);
+    doc.text('No visitor data found for the selected period.', 14, 90);
+  }
+
+    // Show preview and download
+    const pdfBlob = doc.output('blob');
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    const previewContainer = document.getElementById('reportContent');
+    previewContainer.innerHTML = `<iframe src="${pdfUrl}" width="100%" height="500px" style="border: none;"></iframe>`;
+
+    const downloadBtn = document.createElement('button');
+    downloadBtn.className = 'btn btn-success btn-block';
+    downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download PDF';
+    downloadBtn.onclick = () => {
+        const filename = prompt('Enter a filename for your report:', `${reportTitle.replace(/\s+/g, '_')}.pdf`);
+        if (filename) {
+            doc.save(filename.endsWith('.pdf') ? filename : `${filename}.pdf`);
+        }
+    };
+
+    previewContainer.appendChild(downloadBtn);
+    reportPreview.style.display = 'block';
+};
+}
+
+
+        // Render visitors table (current visitors)
+document.addEventListener("DOMContentLoaded", () => {
+    // Initial fetch + set interval every 3 seconds
+    fetchVisitors();
+    setInterval(fetchVisitors, 3000);
+    fetchCurrentVisitors();
+    setInterval(fetchCurrentVisitors, 3000);
+});
+function formatDateLocal(date) {
+  // format a Date object as 'YYYY-MM-DD' using local date parts
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function fetchCurrentVisitors() {
+  const today = new Date();
+  const todayLocal = formatDateLocal(today); // e.g. "2025-05-18"
+
+  fetch('/api/visitors')
+    .then(response => response.json())
+    .then(data => {
+      visitors = data.filter(visitor => {
+        const visitorDate = new Date(visitor.date);
+        const visitorDateLocal = formatDateLocal(visitorDate);
+        return visitorDateLocal === todayLocal;
+      });
+
+      console.log("Filtered visitors for today:", visitors);
+      renderVisitorsTable();
+
+      if (Array.isArray(visitors)) {
+        visitorsTodayCounter = visitors;
+        pendingCheckoutsNow = visitors.filter(v => v.status === 'checked-in');
+      }
+    })
+    .catch(error => {
+      console.error("Error fetching visitors:", error);
+    });
+}
+let allVisitors = []; 
+function fetchVisitors() {
+    fetch('/api/visitors')
+        .then(response => response.json())
+        .then(data => {
+            allVisitors = data;
+            visitors = data; 
+            console.log("Fetched visitors:", allVisitors); // Debug output
+              // Get current month and year
+      const now = new Date();
+      const currentMonth = now.getMonth(); // 0-based month (0 = Jan)
+      const currentYear = now.getFullYear();
+
+      // Filter visitors for current month
+      const visitorsThisMonth = allVisitors.filter(visitor => {
+        const visitDate = new Date(visitor.date);
+        return visitDate.getMonth() === currentMonth && visitDate.getFullYear() === currentYear;
+      });
+
+      if(Array.isArray(visitorsThisMonth)) {
+                MonthlyVisitorsCounter = visitorsThisMonth;
+                 // call to keep counters accurate
+            }
+            renderAllVisitorsTable();
+        })
+        .catch(error => {
+            console.error("Error fetching visitors:", error);
+        });
+}
+function renderVisitorsTable() {
+    if (!visitorsTableBody) {
+        console.error("visitorsTableBody element not found in DOM.");
+        return;
+    }
+
+    visitorsTableBody.innerHTML = '';
+
+    if (visitors.length === 0) {
+        visitorsTableBody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center;">No visitors found</td>
+            </tr>`;
+        return;
+    }
+
+    visitors.forEach(visitor => {
+        const row = document.createElement('tr');
+
+        // Status cell content depends on visitor.status and visitor.timeOut
+        let statusContent = '';
+        if (visitor.timeOut) {
+            statusContent = `<span class="status checked-out">Checked Out</span>`;
+        } else if (visitor.timeIn) {
+            statusContent = `<span class="status checked-in">Checked In</span>`;
+        } else {
+            statusContent = 'N/A';
+        }
+
+        // Action buttons: Details button always present
+        const actionButtons = `
+            <button 
+                class="btn btn-primary view-details-btn" 
+                data-badge="${visitor.badgeNumber}" 
+                style="padding: 5px 10px; font-size: 0.8rem;">
+                Details
+            </button>`;
+
+        // Checkout button only if no timeOut yet (visitor still checked in)
+        const checkoutButton = visitor.timeOut
+    ? `<span>${visitor.timeOut}</span>` // show timeOut if already checked out
+    : `
+        <button 
+            class="btn btn-success check-out-btn" 
+            data-badge="${visitor.badgeNumber}" 
+            style="padding: 5px 10px; font-size: 0.8rem;">
+            Check Out
+        </button>`;
+
+
+        row.innerHTML = `
+            <td>${visitor.badgeNumber || 'N/A'}</td>
+            <td>${visitor.firstName || ''} ${visitor.lastName || ''}</td>
+            <td>${visitor.purpose || 'N/A'}</td>
+            <td>${visitor.timeIn || 'N/A'}</td>
+            <td>${statusContent}</td>
+            <td>${actionButtons}</td>
+            <td>${checkoutButton}</td>
+        `;
+
+        visitorsTableBody.appendChild(row);
+    });
+
+    // Attach event listeners for Details buttons
+    document.querySelectorAll('.view-details-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const badgeNumber = btn.getAttribute('data-badge');
+            const visitor = visitors.find(v => v.badgeNumber === badgeNumber);
+
+            if (visitor) {
+                showBadgeModal(visitor); // Your existing function
+            } else {
+                alert('Visitor not found for badge: ' + badgeNumber);
+            }
+        });
+    });
+
+    // Attach event listeners for Check Out buttons
+    document.querySelectorAll('.check-out-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const badgeNumber = btn.getAttribute('data-badge');
+            const visitor = visitors.find(v => v.badgeNumber === badgeNumber);
+
+            if (visitor) {
+                checkOutVisitor(visitor);
+            } else {
+                alert('Visitor not found for badge: ' + badgeNumber);
+            }
+        });
+    });
+}
+async function checkOutVisitor(visitor) {
+    // Format checkout time as 24-hour HH:MM:SS for MySQL and display
+    const now = new Date();
+    const checkoutTime = now.toTimeString().split(' ')[0]; // HH:MM:SS
+
+ // HH:MM:SS
+
+    // Update local visitor data
+    visitor.timeOut = checkoutTime;
+    visitor.status = 'checked-out';
+
+    try {
+        const response = await fetch('/api/updateVisitor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                badgeNumber: visitor.badgeNumber,
+                timeOut: visitor.timeOut,
+                status: visitor.status,
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update visitor');
+        }
+
+        // Find the checkout button element by badge number
+        const btn = document.querySelector(`button.check-out-btn[data-badge="${visitor.badgeNumber}"]`);
+        if (btn) {
+            const row = btn.closest('tr');
+
+            // Replace the checkout button cell content with checkoutTime string
+            btn.parentElement.textContent = checkoutTime;
+
+            // Update the status cell (5th cell, index 4)
+            if (row) {
+                row.cells[4].innerHTML = `<span class="status checked-out">Checked Out</span>`;
+            }
+        }
+
+    } catch (error) {
+        alert('Error checking out visitor: ' + error.message);
+    }
+}
+
+        // Render all visitors table
+        function renderAllVisitorsTable() {
+            allVisitorsTableBody.innerHTML = '';
+            
+            if (visitors.length === 0) {
+                allVisitorsTableBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No visitor records found</td></tr>';
+                return;
+            }
+            
+            // Sort by most recent first
+            const sortedVisitors = [...visitors].sort((a, b) => {
+            // parse date + time into local datetime objects
+            const dateTimeA = new Date(`${a.date}T${a.timeIn}:00`);
+            const dateTimeB = new Date(`${b.date}T${b.timeIn}:00`);
+            return dateTimeB - dateTimeA;  // most recent first
+            });
+
+            sortedVisitors.forEach(visitors => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${visitors.date}</td>
+                    <td>${visitors.badgeNumber}</td>
+                    <td>${visitors.firstName} ${visitors.lastName}</td>
+                    <td>${visitors.purpose}</td>
+                    <td>${visitors.timeIn}</td>
+                    <td>${visitors.timeOut || 'N/A'}</td>
+                    <td><span class="status ${visitors.status === 'checked-in' ? 'checked-in' : 'checked-out'}">${visitors.status === 'checked-in' ? 'Checked In' : 'Checked Out'}</span></td>
+                `;
+                
+                allVisitorsTableBody.appendChild(row);
+            });
+        }
+
+
+        // Show badge modal
+        function showBadgeModal(visitor) {
+    const allowedSections = ['checkin-section']; // update to the correct section ID
+    const activeSection = document.querySelector('.page-section.active');
+
+    if (!activeSection || !allowedSections.includes(activeSection.id)) {
+        console.warn(`Visitor badge modal blocked in section: ${activeSection?.id}`);
+        return;
+    }
+
+    // Populate badge modal content
+    document.getElementById('badgeVisitorName').textContent = `${visitor.firstName} ${visitor.lastName}`;
+    document.getElementById('badgeVisitorPurpose').textContent = `Purpose: ${visitor.purpose}`;
+    document.getElementById('badgeVisitorContact').textContent = `Contact: ${visitor.contact}`;
+    document.getElementById('badgeVisitorTime').textContent = `Time In: ${visitor.timeIn}`;
+    document.getElementById('badgeVisitorNumber').textContent = `Badge #: ${visitor.badgeNumber}`;
+
+    // Open modal
+    openModal(document.getElementById('badgeModal'));
+}
+
+
+
+        // guard-dashboard.js
+
+// Sends the form & location to the server, returns {success, badge_number, error}
+async function checkInVisitor(formData, position) {
+  formData.append('latitude',  position.coords.latitude);
+  formData.append('longitude', position.coords.longitude);
+
+  const res = await fetch('/api/visitor-checkin', {
+    method: 'POST',
+    body: formData
+  });
+
+  let payload;
+  try {
+    payload = await res.json();
+  } catch(e) {
+    console.error('Non‑JSON error response', await res.text());
+    throw new Error('Server returned non-JSON');
+  }
+
+  if (!res.ok) {
+    console.error('Check‑in error payload:', payload);
+    throw new Error(payload.error || 'Unknown server error');
+  }
+
+  return payload;  // { success: true, badge_number }
+}
+
+// Given badgeNumber & the raw FormData values, build the badge HTML
+function renderVisitorBadge(badgeNumber, values) {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString(undefined, {
+    year:  'numeric',
+    month: 'long',
+    day:   'numeric'
+  });
+  const timeStr = now.toLocaleTimeString(undefined, {
+    hour:   '2-digit',
+    minute: '2-digit'
+  });
+
+  return `
+    <h3>DHVSU VISYON VISITOR PASS</h3>
+    <p>${values.get('first_name')} ${values.get('last_name')}</p>
+    <p style="font-size:13px;">Purpose: ${values.get('purpose')}</p>
+    <p style="font-size:13px;">Contact: ${values.get('contact')}</p>
+    <p><strong style="font-size:40px;">
+      badge #:<br>${badgeNumber}
+    </strong></p>
+    <p>Date: ${dateStr}</p>
+    <p>Time In: ${timeStr}</p>
+  `;
+}
+
+// Start polling the backend with GPS updates every 5s
+function startVisitorTracking(badgeNumber) {
+  if (!navigator.geolocation) return alert("Geolocation unsupported.");
+
+  let lastSent = 0;
+  navigator.geolocation.watchPosition(pos => {
+    const now = Date.now();
+    if (now - lastSent < 5000) return;
+    lastSent = now;
+
+    fetch('/api/update-location', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        badge_number: badgeNumber,
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude
+      })
+    });
+  }, console.error, { enableHighAccuracy: true });
+}
+
+        // Generate QR code
+        function generateQRCode(elementId, data) {
+    const qrCodeElement = document.getElementById(elementId);
+
+    if (!qrCodeElement) {
+        console.warn(`QR code container with ID "${elementId}" not found.`);
+        return;
+    }
+
+    const qr = qrcode(4, 'L');
+    qr.addData(data);
+    qr.make();
+
+    qrCodeElement.innerHTML = qr.createImgTag(4);
+
+    const img = qrCodeElement.querySelector('img');
+    if (img) {
+        img.style.width = '100%';
+        img.style.height = '100%';
+    }
+}
+
+
+        // Update counters
+        function updateCounters() {
+            // Update date and time
+            const now = new Date();
+            const day = now.toLocaleDateString('en-PH', { weekday: 'short' }).toUpperCase(); // e.g., "SUN"
+            const date = now.toLocaleDateString('en-PH', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            }); // e.g., "May 18, 2025"
+            const time = now.toLocaleTimeString('en-PH', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            }); // e.g., "9:06 PM"
+            dateTodayEl.textContent = `${day} | ${date} | ${time}`;
+
+            // Visitors today
+                visitorsTodayEl.textContent = visitorsTodayCounter.length;
+            
+            // Visitors by this month
+            monthlyVisitorsEl.textContent = MonthlyVisitorsCounter.length;
+            // Pending checkouts 
+            pendingCheckoutsEl.textContent = pendingCheckoutsNow.length;
+        }
+
+   async function sendToEmail() {
+  const badgeNumberElem = document.getElementById('badgeVisitorNumber');
+  if (!badgeNumberElem) return alert("Badge number not found.");
+  const badgeNumber = badgeNumberElem.textContent.replace('Badge #:', '').trim();
+  if (!badgeNumber) return alert("Badge number is empty.");
+
+  try {
+    const emailRes = await fetch('/get-email-by-badge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ badgeNumber }),
+    });
+
+    if (!emailRes.ok) return alert("Failed to get email.");
+    const { email } = await emailRes.json();
+    if (!email) return alert("Email not found for this badge.");
+
+    // Collect the rest of the badge info
+    const name = document.getElementById('badgeVisitorName')?.textContent || '';
+    const purpose = document.getElementById('badgeVisitorPurpose')?.textContent.replace('Purpose: ', '') || '';
+    const contact = document.getElementById('badgeVisitorContact')?.textContent.replace('Contact: ', '') || '';
+    const date = document.getElementById('badgeVisitorDate')?.textContent.replace('Date: ', '') || '';
+    const timeIn = document.getElementById('badgeVisitorTime')?.textContent.replace('Time In: ', '') || '';
+
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('name', name);
+    formData.append('purpose', purpose);
+    formData.append('contact', contact);
+    formData.append('badgeNumber', badgeNumber);
+    formData.append('date', date);
+    formData.append('timeIn', timeIn);
+
+    const sendRes = await fetch('/send-email', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const result = await sendRes.json();
+    if (result.success) {
+      alert("Badge sent to email successfully!");
+    } else {
+      alert("Failed to send email: " + result.error);
+    }
+  } catch (err) {
+    console.error("sendToEmail error:", err);
+    alert("An unexpected error occurred.");
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const saveBtn = document.querySelector('#reports-section .btn');
+    saveBtn.addEventListener('click', async () => {
+        const row = saveBtn.closest('tr');
+        const email = row.querySelector('input[type="email"]').value;
+        const username = row.querySelector('input[placeholder="Username"]').value;
+        const password = row.querySelector('input[type="password"]').value;
+        const role = row.querySelector('select').value;
+
+        const res = await fetch('/api/create-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, username, password, role })
+        });
+
+        const result = await res.json();
+        if (result.success) {
+            alert("User created successfully!");
+        } else {
+            alert("Error: " + result.message);
+        }
+    });
+});
+document.addEventListener('DOMContentLoaded', () => {
+    const logoutNav = document.querySelector('.nav-item[data-section="logout"]');
+    logoutNav.addEventListener('click', () => {
+        window.location.href = "/logout";
+    });
+});
+
+
+    </script>
+    <!-- Visitor Badge Modal (hidden, only used for visitor details) -->
+<div class="modal" id="badgeModal" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Visitor Badge</div>
+      <button class="close-modal" onclick="document.getElementById('badgeModal').style.display='none'">&times;</button>
+    </div>
+    <div class="visitor-badge">
+      <div class="badge-header">
+        <h3>SCHOOLSECURE VISITOR PASS</h3>
+      </div>
+      <div class="badge-details">
+        <h3 id="badgeVisitorName">Visitor Name</h3>
+        <p id="badgeVisitorPurpose">Purpose: <span id="badgeVisitorPurposeText"></span></p>
+        <p id="badgeVisitorContact">Contact: <span id="badgeVisitorContactText"></span></p>
+      </div>
+      <div class="badge-number-display" style="text-align: center; margin: 20px 0;">
+        <p id="badgeVisitorNumber" style="font-size: 32px; font-weight: bold;"></p>
+      </div>
+      <div class="badge-footer">
+        <p id="badgeVisitorDate"></p>
+        <p id="badgeVisitorTime"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

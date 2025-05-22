@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DHVSU Visyon Visitor Check-In</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+      color: #333;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .form-container,
+    #badge-container,
+    #location-popup {
+      background-color: white;
+      max-width: 400px;
+      margin: 30px auto;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #location-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+      text-align: center;
+    }
+
+    form input,
+    form select,
+    form textarea,
+    form button {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 12px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    form button,
+    #location-popup button,
+    #badge-container button {
+      background-color: #111;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+      padding: 10px 16px;
+      border-radius: 6px;
+      text-align: center;
+      display: block;
+      margin: 0 auto;
+    }
+
+    form button:hover,
+    #location-popup button:hover,
+    #badge-container button:hover {
+      background-color: #333;
+    }
+
+    #badge {
+      background-color: white;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      padding: 20px;
+      text-align: center;
+      font-family: 'Segoe UI', sans-serif;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    #badge h3 {
+      background-color: #0d1126;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+
+    #badge p {
+      margin: 10px 0;
+    }
+
+    #badge strong {
+      font-size: 18px;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="location-popup">
+  <h2>Welcome to DHVSU VISYON</h2>
+  <p>This check-in form requires your location. Please click the button below to allow location access.</p>
+  <br />
+  <button onclick="requestLocation()">Allow Location Access</button>
+</div>
+
+<div class="form-container hidden" id="form-wrapper">
+  <h2>Visitor Check-In</h2>
+  <form id="visitor-form">
+    <div class="form-group">
+      <label for="first_name">First Name *</label>
+      <input type="text" name="first_name" placeholder="First Name" required />
+    </div>
+    <div class="form-group">
+      <label for="last_name">Last Name *</label>
+    <input type="text" name="last_name" placeholder="Last Name" required />
+    </div>
+    <div class="form-group">
+    <label for="phone">Phone Number *</label>
+    <input type="tel" name="phone" placeholder="Phone Number" required />
+    </div>
+    <div class="form-group">
+    <label for="email">Email *</label>
+    <input type="email" name="email" placeholder="Email" />
+    </div>
+    <div class="form-group">
+    <label for="purpose">Purpose of Visit *</label>
+    <select name="purpose" required>
+      <option value="">Select Destination</option>
+      <option value="Registrar's Office">Registrar's Office</option>
+      <option value="Dean's Office">Dean's Office</option>
+      <option value="Accounting Office">Accounting Office</option>
+      <option value="Library">Library</option>
+      <option value="Clinic">Clinic</option>
+      <option value="Faculty Room">Faculty Room</option>
+      <option value="Other">Other</option>
+    </select>
+    </div>
+    <div class="form-group">
+    <label for="contact">Contact Person *</label>
+    <input type="text" name="contact" placeholder="Contact Person" required />
+    </div>
+    <div class="form-group">
+    <label for="id_type">ID Type *</label>
+    <select name="id_type" required>
+      <option value="">Select ID type</option>
+      <option value="Student ID">Student ID</option>
+      <option value="Driver's License">Driver's License</option>
+      <option value="National ID">National ID</option>
+      <option value="School ID">School ID</option>
+      <option value="Other">Other</option>
+    </select>
+    </div>
+    <div class="form-group">
+    <label for="id_number">ID Number *</label>
+    <input type="text" name="id_number" placeholder="ID Number" required />
+    </div>
+    <div class="form-group">
+    <label for="notes">Notes</label>
+    <textarea name="notes" placeholder="Notes"></textarea>
+    <button type="submit">Complete Check-In</button>
+    </div>
+  </form>
+</div>
+
+<div id="badge-container" class="hidden">
+  <h2>Visitor Badge</h2>
+  <div id="badge"></div>
+  <button onclick="sendToEmail()">Send to Email</button>
+</div>
+
+<script>
+let userLocation = null;
+let watchId = null;
+let lastSentTime = 0;
+const sendInterval = 1000; //  1second
+let visitorBadgeNumber = null;
+
+function requestLocation() {
+  navigator.geolocation.getCurrentPosition(
+    function(position) {
+      userLocation = position;
+      document.getElementById('location-popup').classList.add('hidden');
+      document.getElementById('form-wrapper').classList.remove('hidden');
+    },
+    function(error) {
+      alert("Location access denied. You cannot proceed without allowing location.");
+    }
+  );
+}
+
+document.getElementById('visitor-form').addEventListener('submit', function (e) {
+  e.preventDefault();
+
+  if (!userLocation) {
+    alert("Location data is missing. Cannot proceed.");
+    return;
+  }
+
+  const form = e.target;
+  const formData = new FormData(form);
+  // Add initial lat and lng
+  const date_in = new Date();
+  const localDate = date_in.getFullYear() + '-' +
+                  String(date_in.getMonth() + 1).padStart(2, '0') + '-' +
+                  String(date_in.getDate()).padStart(2, '0');
+  formData.append('date', localDate);
+  formData.append('latitude', userLocation.coords.latitude);
+  formData.append('longitude', userLocation.coords.longitude);
+  formData.append('status', 'checked-in');
+
+  fetch('/api/visitor-checkin', {
+    method: 'POST',
+    body: formData,
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      visitorBadgeNumber = data.badge_number;
+
+      // Show badge on success
+      const now = new Date();
+      const dateStr = now.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      const timeStr = now.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+
+      const badgeHtml = `
+        <h3>DHVSU VISYON VISITOR PASS</h3>
+        <p id="badgeVisitorName">${form.first_name.value} ${form.last_name.value}</p>
+        <p id="badgeVisitorPurpose" style="font-size: 13px;">Purpose: ${form.purpose.value}</p>
+        <p id="badgeVisitorContact" style="font-size: 13px;">Contact: ${form.contact.value}</p>
+        <p><strong id="visitorBadgeNumber" style="font-size: 40px;">
+          badge #: <br>${visitorBadgeNumber}
+        </strong></p>
+        <p id="badgeVisitorDate">Date: ${dateStr}</p>
+        <p id="badgeVisitorTime">Time In: ${timeStr}</p>
+      `;
+
+      document.getElementById('badge').innerHTML = badgeHtml;
+      document.getElementById('form-wrapper').classList.add('hidden');
+      document.getElementById('badge-container').classList.remove('hidden');
+
+      // Start continuous location tracking after check-in success
+      startTrackingLocation();
+    } else {
+      alert("Error during check-in: " + data.error);
+    }
+  })
+  .catch(err => {
+    alert("Error connecting to server.");
+    console.error(err);
+  });
+});
+
+function startTrackingLocation() {
+  if (!navigator.geolocation) {
+    alert("Geolocation is not supported by your browser.");
+    return;
+  }
+
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+  }
+
+  watchId = navigator.geolocation.watchPosition(
+    position => {
+      userLocation = position;
+      const now = Date.now();
+
+      if (now - lastSentTime > sendInterval) {
+        lastSentTime = now;
+        sendLocationUpdate(position.coords.latitude, position.coords.longitude);
+      }
+    },
+    error => {
+      console.error("Error watching position: ", error);
+    },
+    {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 5000
+    }
+  );
+}
+
+function sendLocationUpdate(lat, lng) {
+  if (!visitorBadgeNumber) return;
+
+  fetch('/api/update-location', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      badge_number: visitorBadgeNumber,
+      latitude: lat,
+      longitude: lng,
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log('Location update sent', data, lat, lng);
+  })
+  .catch(err => {
+    console.error('Failed to send location update', err);
+  });
+}
+
+async function sendToEmail() {
+  // Get badge number directly from the element with id 'visitorBadgeNumber'
+  const badgeNumberElem = document.getElementById('visitorBadgeNumber');
+  if (!badgeNumberElem) return alert("Badge number not found.");
+
+  // Extract just the badge number (strip label and whitespace)
+  const badgeNumber = badgeNumberElem.textContent.replace(/badge #:\s*/i, '').trim();
+  if (!badgeNumber) return alert("Badge number is empty.");
+
+  try {
+    // Get email by badge number from backend
+    const emailRes = await fetch('/get-email-by-badge', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ badgeNumber }),
+    });
+
+    if (!emailRes.ok) return alert("Failed to get email.");
+    const { email } = await emailRes.json();
+    if (!email) return alert("Email not found for this badge.");
+
+    // Get other badge info from elements by ID
+    const name = document.getElementById('badgeVisitorName')?.textContent || '';
+    const purpose = document.getElementById('badgeVisitorPurpose')?.textContent.replace(/^Purpose:\s*/, '') || '';
+    const contact = document.getElementById('badgeVisitorContact')?.textContent.replace(/^Contact:\s*/, '') || '';
+    const date = document.getElementById('badgeVisitorDate')?.textContent.replace(/^Date:\s*/, '') || '';
+    const timeIn = document.getElementById('badgeVisitorTime')?.textContent.replace(/^Time In:\s*/, '') || '';
+
+    // Prepare form data to send
+    const formData = new FormData();
+    formData.append('email', email);
+    formData.append('name', name);
+    formData.append('purpose', purpose);
+    formData.append('contact', contact);
+    formData.append('badgeNumber', badgeNumber);
+    formData.append('date', date);
+    formData.append('timeIn', timeIn);
+
+    // Send email request to server
+    const sendRes = await fetch('/send-email', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!sendRes.ok) {
+      alert("Failed to send email.");
+      return;
+    }
+
+    const sendData = await sendRes.json();
+    if (sendData.success) {
+      alert("Visitor badge sent to email successfully.");
+    } else {
+      alert("Failed to send visitor badge: " + (sendData.error || "Unknown error."));
+    }
+  } catch (err) {
+    console.error(err);
+    alert("An error occurred while sending email.");
+  }
+}
+
+
+</script>
+
+</body>
+</html>
